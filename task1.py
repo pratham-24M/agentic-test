@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""Check every line of a requirements file against PyPI for Python 3.11."""
 import json
 import re
 import sys
