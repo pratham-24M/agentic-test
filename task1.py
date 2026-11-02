@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import json
 import re
 import sys
@@ -12,7 +11,6 @@ TARGET = Version("3.11")
 
 
 def fetch(name, version):
-    """Return release JSON, or None if PyPI answers 404."""
     url = f"https://pypi.org/pypi/{name}/{version}/json"
     try:
         with urllib.request.urlopen(url, timeout=15) as resp:
@@ -24,14 +22,12 @@ def fetch(name, version):
 
 
 def parse(line):
-    """'name==version' -> (name, version); None if not a pinned line."""
     line = line.split("#")[0].strip()
     m = re.match(r"^([A-Za-z0-9._-]+)(?:\[[^\]]*\])?\s*==\s*([^\s;]+)", line)
     return (m.group(1), m.group(2)) if m else None
 
 
 def min_python(spec):
-    """Lowest Python version a SpecifierSet allows (from >=, >, ~=, ==)."""
     lows = [Version(s.version.replace(".*", ""))
             for s in spec if s.operator in (">=", ">", "~=", "==")]
     return max(lows) if lows else Version("0")
@@ -43,7 +39,7 @@ def main(path):
 
     not_found = 0
     incompatible = 0
-    highest = None  # (Version, "name==version", raw specifier)
+    highest = None
 
     for line in lines:
         parsed = parse(line)
@@ -53,7 +49,7 @@ def main(path):
             continue
         rp = (data["info"].get("requires_python") or "").strip()
         if not rp:
-            continue  # no requires_python -> compatible, can't be "highest"
+            continue
         spec = SpecifierSet(rp)
         if not spec.contains(TARGET, prereleases=True):
             incompatible += 1
